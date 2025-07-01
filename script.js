@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const scoreEl = document.getElementById('score');
     const scoreCircleEl = document.getElementById('score-circle');
     const detailsEl = document.getElementById('details');
+    const employeeNameInput = document.getElementById('employee-name');
+    const vttFileInput = document.getElementById('vtt-file');
 
     // --- 分析ロジック ---
 
@@ -18,21 +20,57 @@ document.addEventListener('DOMContentLoaded', () => {
     // ジョブサーチ関連語
     const jobSearchWords = ['転職', 'キャリア', 'エージェント', '面接', '他社', '市場価値', '次のステップ', '将来', '環境を変えたい'];
 
-    const employeeNameInput = document.getElementById('employee-name');
-
     analyzeBtn.addEventListener('click', () => {
         const employeeName = employeeNameInput.value.trim();
-        const text = transcriptInput.value.trim();
+        const textInput = transcriptInput.value.trim();
+        const vttFile = vttFileInput.files[0];
 
         if (!employeeName) {
             alert('部下の名前を入力してください。');
             return;
         }
-        if (!text) {
-            alert('文字起こしデータを入力してください。');
+
+        if (!textInput && !vttFile) {
+            alert('文字起こしデータ（VTTファイルまたはテキスト）を入力してください。');
             return;
         }
 
+        if (vttFile) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const vttContent = e.target.result;
+                const parsedText = parseVTT(vttContent);
+                transcriptInput.value = parsedText; // ユーザーが確認できるようにテキストエリアに表示
+                analyze(parsedText, employeeName);
+            };
+            reader.readAsText(vttFile);
+        } else {
+            analyze(textInput, employeeName);
+        }
+    });
+
+    function parseVTT(vttContent) {
+        // VTTの各発言ブロックを抽出する。話者と発言内容は<v>タグで囲まれていると仮定。
+        // IDやタイムスタンプ行を無視し、<v>タグの間のテキストを抽出する
+        const regex = /<v\s*(.*?)>([\s\S]*?)<\/v>/g;
+        let match;
+        const lines = [];
+        while ((match = regex.exec(vttContent)) !== null) {
+            const speaker = match[1].trim();
+            // 複数行にわたる発言を1行にまとめる
+            const dialogue = match[2].trim().replace(/\r?\n/g, ' ');
+            if (speaker && dialogue) {
+                lines.push(`${speaker}: ${dialogue}`);
+            }
+        }
+        return lines.join('\n');
+    }
+    
+    function analyze(text, employeeName) {
+        if (!text) {
+            alert('分析するデータがありません。');
+            return;
+        }
         // 各特徴量を計算
         const sentimentResult = calculateSentimentFeatures(text);
         const engagementResult = calculateEngagementFeatures(text, employeeName);
@@ -47,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 結果を表示
         displayResults(finalScore, sentimentResult, engagementResult, jobSearchResult);
-    });
+    }
 
     function calculateSentimentFeatures(text) {
         const words = text.split(/\s+/);
@@ -60,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // ネガティブな単語が多いほどスコアが高くなる (0-100)
-        const score = Math.min(100, (negativeCount / (words.length / 100)) * 10);
+        const score = words.length > 0 ? Math.min(100, (negativeCount / (words.length / 100)) * 10) : 0;
         return {
             label: '① 感情トーン＆変動',
             score: score,
@@ -84,17 +122,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const employeeText = employeeLines.map(line => line.replace(employeeIdentifierRegex, '').trim()).join(' ');
-        const employeeWords = employeeText.split(/\s+/);
+        const employeeWords = employeeText.split(/\s+/).filter(w => w.length > 0);
 
         // 社員発話比率
         const speechRatio = (employeeLines.length / lines.length) * 100;
 
         // 平均トークン長 (簡易的に文字数で)
-        const avgTokenLength = employeeWords.join('').length / employeeWords.length;
+        const avgTokenLength = employeeWords.length > 0 ? employeeWords.join('').length / employeeWords.length : 0;
 
         // 詰まり語の頻度
         const fillerCount = fillerWords.reduce((acc, word) => acc + (employeeText.match(new RegExp(word, 'g')) || []).length, 0);
-        const fillerRate = (fillerCount / employeeWords.length) * 100;
+        const fillerRate = employeeWords.length > 0 ? (fillerCount / employeeWords.length) * 100 : 0;
 
         // スコアリング (低いエンゲージメントほど高スコア)
         let score = 0;
@@ -174,3 +212,4 @@ document.addEventListener('DOMContentLoaded', () => {
         resultContainer.classList.remove('hidden');
     }
 });
+
