@@ -9,19 +9,20 @@
 <body>
     <div class="container">
         <h1>退職リスクスコアリングアプリ</h1>
-        <p>1on1の文字起こしデータを貼り付けて、「分析する」ボタンをクリックしてください。</p>
+        <p>1on1の文字起こしデータ（.vttファイル）をアップロードするか、テキストを貼り付けて、「分析する」ボタンをクリックしてください。</p>
         
         <div class="input-section">
             <div class="name-input-wrapper">
                 <label for="employee-name">部下の名前（発言者名）:</label>
-                <input type="text" id="employee-name" placeholder="例: 田中">
-                <small>文字起こしデータで使われている部下の名前（「部下:」の部分）を入力してください。</small>
+                <input type="text" id="employee-name" placeholder="例: 山岡 慎治">
+                <small>文字起こしデータで使われている部下の名前を入力してください。</small>
             </div>
-            <textarea id="transcript" placeholder="ここに文字起こしデータを貼り付け...
-例：
-上司: 最近どうですか？
-田中: はい、まあまあです。えーっと、新しいプロジェクトの件ですが...
-..."></textarea>
+            <div class="file-input-wrapper">
+                <label for="vtt-file">VTTファイルを選択:</label>
+                <input type="file" id="vtt-file" accept=".vtt">
+            </div>
+            <p class="or-separator">または</p>
+            <textarea id="transcript" placeholder="ここに文字起こしデータを貼り付け..."></textarea>
             <button id="analyze-btn">分析する</button>
         </div>
         
