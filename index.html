@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>退職リスクスコアリングアプリ</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>退職リスクスコアリングアプリ</h1>
+        <p>1on1の文字起こしデータを貼り付けて、「分析する」ボタンをクリックしてください。</p>
+        
+        <div class="input-section">
+            <div class="name-input-wrapper">
+                <label for="employee-name">部下の名前（発言者名）:</label>
+                <input type="text" id="employee-name" placeholder="例: 田中">
+                <small>文字起こしデータで使われている部下の名前（「部下:」の部分）を入力してください。</small>
+            </div>
+            <textarea id="transcript" placeholder="ここに文字起こしデータを貼り付け...
+例：
+上司: 最近どうですか？
+田中: はい、まあまあです。えーっと、新しいプロジェクトの件ですが...
+..."></textarea>
+            <button id="analyze-btn">分析する</button>
+        </div>
+        
+        <div id="result-container" class="hidden">
+            <h2>分析結果</h2>
+            <div class="score-wrapper">
+                <p>退職リスクスコア</p>
+                <div id="score-circle">
+                    <span id="score">0</span>
+                </div>
+            </div>
+            <div id="details">
+                <!-- ここに詳細な分析結果が表示されます -->
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
